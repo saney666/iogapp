@@ -1,0 +1,357 @@
+<?php 
+    include("./views/header.html")
+?>
+
+<div id='app'>
+    <div class="w3bar w3black w3top" style='top:50px'>
+        <div class="w3bar-item w3button" style='width:50%' @click='back'>Back</div>
+        <div class="w3bar-item w3button w3right" style='width:50%' @click='apply'>Apply</div>
+    </div>
+    <br>
+    <br>
+    <h2 class="w3center">{{ title }}</h2>
+
+    <?php 
+    include("./views/transaction/edit/common.html")
+?>
+    <br>
+    <?php 
+    include("./views/transaction/edit/interface.html")
+?>
+    <br>
+    <?php 
+    include("./views/transaction/edit/format/index.html")
+?>
+    <?php 
+include("./views/transaction/edit/applyModal.html")
+?>
+</div>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            title: '<?php echo $title; ?>',
+            activeInterface: 1,
+            activeFormat: 1,
+            activeCommon: 1,
+            lans: JSON.parse('<?php echo $lans; ?>'),
+            coms: JSON.parse('<?php echo $coms; ?>'),
+            data: JSON.parse('<?php echo $data; ?>'),
+            formatData: JSON.parse('<?php echo $formatData; ?>'),
+            selectLanValue: -1,
+            selectComValue: -1,
+            activeLan: 0,
+            activeCom: 0,
+            editLanData: [],
+            editComData: [],
+            saveComData: 1,
+            saveLanData: 1,
+            deleteLanData: 0,
+            addLanData: 0,
+            tryCloseEditCom: 0,
+            tryCloseEditLan: 0,
+
+            doApply: 0,
+            applyMessage: 'Saving...',
+
+            format_custom_data: JSON.parse('<?php echo $formatCustomData; ?>'),
+            format_modbustcp_data: JSON.parse('<?php echo $formatModbusTCPData; ?>'),
+            format_modbusrtu_data: JSON.parse('<?php echo $formatModbusRTUData; ?>')
+        },
+        methods: {
+            back: function () {
+                window.location = '/transaction';
+            },
+            apply: function () {
+                if (!confirm('Continue?'))
+                    return;
+                var self = this;
+                var formatData = [];
+                switch (parseInt(self.data[0].format)) {
+                    case 1:
+                        formatData = self.format_custom_data;
+                        break;
+                    case 2:
+                        formatData = self.format_modbusrtu_data;
+                        break;
+                    case 3:
+                        formatData = self.format_modbustcp_data;
+                        break;
+                }
+                self.doApply = 1;
+                axios.post('/transaction/apply', {
+                    main: self.data,
+                    format: formatData
+                })
+                    .then(function (response) {
+                        if (response.data) {
+                            self.applyMessage = 'Waitting for apply';
+                            self.checkApplyingFinish();
+                        } else
+                            self.applyMessage = 'Save Fail..';
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.applyMessage = error;
+                    });
+            },
+            checkApplyingFinish: function () {
+                var self = this;
+                axios.get('/transaction/flag', {
+                    params: {
+                        tid: self.data[0].rowid
+                    }
+                })
+                    .then(function (response) {
+                        if (response.data) {
+                            window.location = '/transaction';
+                        } else
+                            self.checkApplyingFinish();
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.checkApplyingFinish();
+                    });
+            },
+            selectLanChange: function () {
+                if (this.data[0].iid == 0) {
+                    this.data[0].iid = -1;
+                    this.activeLan = 1;
+                }
+            },
+            selectComChange: function () {
+                if (this.data[0].iid == 0) {
+                    this.data[0].iid = -1;
+                    this.activeCom = 1;
+                }
+            },
+            editCom: function (com) {
+                if (this.saveComData && this.editComData.length == null)
+                    return;
+                this.saveComData = 0;
+                this.editComData = com;
+            },
+            saveCom: function () {
+                var self = this;
+                self.saveComData = 1;
+                axios.post('/transaction/saveCom', {
+                    com: self.editComData,
+                })
+                    .then(function (response) {
+                        if (response.data)
+                            alert("Save Ok");
+                        else
+                            alert("Save Fail");
+                        self.saveComData = 0;
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.saveComData = 0;
+                    });
+            },
+            closeComModal: function () {
+                var self = this;
+                if (self.tryCloseEditCom)
+                    return;
+                self.tryCloseEditCom = 1;
+                self.editComData = [];
+                axios.get('/transaction/getCom')
+                    .then(function (response) {
+                        self.coms = response.data;
+                        self.activeCom = 0
+                        self.tryCloseEditCom = 0;
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.tryCloseEditCom = 0;
+                    });
+            },
+            editLan: function (lan) {
+                if (this.saveLanData && this.editLanData.length == null)
+                    return;
+                if (lan == null) {
+                    this.editLanData = [];
+                    this.editLanData['ip'] = '';
+                    this.editLanData['port'] = '';
+                } else
+                    this.editLanData = lan;
+                this.saveLanData = 0;
+
+            },
+            saveLan: function () {
+                var self = this;
+                if (self.saveLanData)
+                    return;
+                self.saveLanData = 1;
+                axios.post('/transaction/saveLan', {
+                    Lan: self.editLanData,
+                })
+                    .then(function (response) {
+                        if (response.data)
+                            alert("Save Ok");
+                        else
+                            alert("Save Fail");
+                        self.saveLanData = 0;
+                        self.editLanData = [];
+                        axios.get('/transaction/getLan')
+                            .then(function (response) {
+                                self.lans = response.data;
+                            })
+                            .catch(function (error) {
+                                alert(error);
+                            });
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.saveLanData = 0;
+                        self.editLanData = [];
+                    });
+            },
+            addLan: function () {
+                var self = this;
+                if (self.addLanData)
+                    return;
+                self.addLanData = 1;
+                axios.post('/transaction/addLan', {
+                    ip: self.$refs.lanIp.value,
+                    port: self.$refs.lanPort.value
+                })
+                    .then(function (response) {
+                        if (response.data)
+                            alert("Add Ok");
+                        else
+                            alert("Add Fail");
+                        self.addLanData = 0;
+                        self.editLanData = [];
+                        axios.get('/transaction/getLan')
+                            .then(function (response) {
+                                self.lans = response.data;
+                            })
+                            .catch(function (error) {
+                                alert(error);
+                            });
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.addLanData = 0;
+                        self.editLanData = [];
+                    });
+            },
+            deleteLan: function () {
+                var self = this;
+                if (self.deleteLanData)
+                    return;
+                self.deleteLanData = 1;
+                axios.post('/transaction/deleteLan', {
+                    Lan: self.editLanData,
+                })
+                    .then(function (response) {
+                        if (response.data)
+                            alert("Delete Ok");
+                        else
+                            alert("Delete Fail");
+                        self.deleteLanData = 0;
+                        self.editLanData = [];
+                        axios.get('/transaction/getLan')
+                            .then(function (response) {
+                                self.lans = response.data;
+                            })
+                            .catch(function (error) {
+                                alert(error);
+                            });
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.deleteLanData = 0;
+                        self.editLanData = [];
+                    });
+            },
+            closeLanModal: function () {
+                var self = this;
+                if (self.tryCloseEditLan)
+                    return;
+                self.tryCloseEditLan = 1;
+                self.editLanData = [];
+                axios.get('/transaction/getLan')
+                    .then(function (response) {
+                        self.lans = response.data;
+                        self.activeLan = 0
+                        self.tryCloseEditLan = 0;
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.tryCloseEditLan = 0;
+                    });
+            },
+            deleteCustomData: function (index) {
+                this.format_custom_data.splice(index, 1);
+            },
+            addCustomCommand: function () {
+                this.format_custom_data.push({
+                    tid: 0, command: '',
+                    CommandType: 0, SplitCode: ' ', head: '', tail: '', length: 0, recv: [], hide: 0
+                });
+
+            },
+            addCustomReceiveData: function (item) {
+                item.recv.push({
+                    position: 0,
+                    changeway: 0,
+                    writeaddress: 0,
+                    parameter: 0
+                });
+            },
+            removeCustomRecv: function(item, index){
+                item.recv.splice(index, 1);
+            },
+            addmodbustcpsetting: function () {
+                this.format_modbustcp_data.push({
+                    transactionId: 0,
+                    protocolId: 0,
+                    unitId: 0,
+                    function: 1,
+                    readAddr: 0,
+                    number: 1,
+                    writeAddr: 0,
+                });
+            },
+            removemodbustcpsetting: function (index) {
+                this.format_modbustcp_data.splice(index, 1);
+            },
+            addmodbusrtusetting: function () {
+                this.format_modbusrtu_data.push({
+                    unitId: 0,
+                    function: 1,
+                    readAddress: 0,
+                    number: 1,
+                    writeAddress: 0,
+                });
+            },
+            removemodbusrtusetting: function (index) {
+                this.format_modbusrtu_data.splice(index, 1);
+            },
+            verifyFormatList: function (val) {
+                if (val == 1) {
+
+                } else {
+
+                    switch (parseInt(this.data[0].format)) {
+                        case 1:
+                            this.data[0].format = 0;
+                            break;
+                    }
+                }
+                this.formatData[0].hide = parseInt(val);
+            }
+        },
+        mounted: function () {
+            this.data[0].activeLog = parseInt(this.data[0].activeLog);
+        },
+    })    
+</script>
+
+
+<?php 
+    include("./views/footer.html")
+?>

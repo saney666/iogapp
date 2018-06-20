@@ -1,0 +1,32 @@
+<div class="w3modal" :class='{w3show : activeLan}'>
+    <div class="w3modal-content">
+        <div class="w3container">
+            <span @click="closeLanModal" class="w3button w3display-topright w3black">&times;</span>
+            <h2 class='w3center'>Edit LAN</h2>
+            <div class="w3bar w3light-grey">                
+                <div v-for='item in lans' class="w3button w3bar-item w3border" :class='{w3grey: item == editLanData }' @click='editLan(item)'>{{ item.ip + ":" + item.port }}</div>
+            </div>
+            <table class="w3table  w3border w3grey">
+                <tr>
+                    <th>IP</th>
+                    <td>
+                        <input type="text" class='w3input w3border' ref='lanIp' v-model='editLanData.ip' >
+                    </td>
+                </tr>
+                <tr>
+                    <th>Port</th>
+                    <td>
+                        <input type="text" class='w3input w3border' ref='lanPort'  v-model='editLanData.port'>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="w3bar">
+                <input type="button" class='w3bar-item w3button w3black w3border' style='width:33%' value="Save" @click='saveLan'  :disabled='editLanData.length != null'>
+                <input type='button' class="w3button w3bar-item w3black w3border" style='width:34%' value='Add' @click='addLan'>
+                <input type='button' class="w3button w3bar-item w3black w3border" style='width:33%' value='Delete' @click='deleteLan' :disabled='editLanData.length != null'>
+            </div>
+
+        </div>
+    </div>
+</div>

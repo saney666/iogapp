@@ -1,0 +1,6 @@
+RewriteEngine on
+RewriteBase /
+RewriteRule ^(.+)$ index.php?uri=$1 [QSA,L]
+
+php_flag  display_errors        off
+php_value error_reporting       2039

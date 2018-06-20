@@ -1,0 +1,90 @@
+<?php 
+    include("./views/header.html")
+?>
+
+<div id='app'>
+    <div class="w3bar w3black">
+        <div class="w3bar-item w3button" style='width:10%' @click='back'>Back</div>
+        <div class="w3bar-item w3button " style='width:90%' @click="refresh">Refresh</div>
+    </div>
+    <div class="w3center" v-show='active'>
+        <div class='w3spin'>@</div>
+        Refreshing...
+    </div>
+    <table class="w3table-all w3hoverable">
+        <thead>
+            <tr class="w3light-grey">
+                <th>#</th>
+                <th>Time</th>
+                <th>Target</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tr v-for='(item, i) in items'>
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.time }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.message }}</td>
+        </tr>
+    </table>
+
+    <div class="w3bar w3center">
+        <div class="w3button" @click='goPage(1)'>&laquo;</div>
+        <div class="w3button" v-for='i in end-start + 1' :class='{w3grey:page==i + start - 1}' @click='goPage(i + start - 1)'>
+            {{ i + start - 1 }}
+        </div>
+        <div class="w3button" @click='goPage(max)'>&raquo;</div>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            active: 0,
+            items: JSON.parse('<?php echo $data; ?>'),
+            max: parseInt('<?php echo $max ?>'),
+            page: parseInt('<?php echo $index ?>'),
+            start: parseInt('<?php echo $start ?>'),
+            end: parseInt('<?php echo $end ?>'),
+        },
+        methods: {
+            getId: function () {
+                var matches = /id=([^&#=]*)/.exec(window.location.search);
+                return matches[1];
+            },
+            goPage: function (index) {
+                var id = this.getId();
+                window.location = '/transaction/log?id=' + id + "&page=" + index;
+            },
+            refresh: function () {
+                var self = this;
+                self.active = 1;
+                axios.get('/transaction/log.data', {
+                    params: {
+                        ID: self.getId(),
+                        page: self.page,
+                    }
+                })
+                    .then(function (response) {
+                        self.items = response.data;
+                        self.active = 0;
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.active = 0;
+                    });
+            },
+            back: function () {
+                window.location = '/transaction';
+            }
+        },
+        mounted: function () {
+        }
+    })
+</script>
+
+
+<?php 
+    include("./views/footer.html")
+?>

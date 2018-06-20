@@ -1,0 +1,34 @@
+</div>
+<br>
+<br>
+<div class='w3bottom w3bar w3light-grey w3border ' id='footer'>
+    <div class="w3spin w3bar-item ">@</div>
+    <div class='w3bar-item w3right w3button' @click='goTop' v-show='showGoTop'>Go Top</div>
+    <div class='w3bar-item w3right'>Copyright</div>
+</div>
+<script>
+    var foot = new Vue({
+        el: '#footer',
+        data: {
+            showGoTop: 0,
+        },
+        methods: {
+            getScroll: function () {
+                if (window.scrollY > 100)
+                    this.showGoTop = 1;
+                else
+                    this.showGoTop = 0;
+            },
+            goTop: function () {
+                window.scrollTo(0, 0);
+            }
+        },
+        mounted: function () {
+            window.document.body.onscroll = this.getScroll;
+        }
+    })
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+<?php 
+    include("./views/header.html");
+?>
+
+<h2>Login</h2>
+
+<div id='app' class="w3display-container">
+    <p>Password</p>
+    <input class="w3input" type="password" v-model='password' autofocus @keyup.enter='doLogin' ref='pwd'>
+    <hr>
+    <input type='button' class='w3button w3black w3display-bottom' @click='doLogin' value='Next' />
+    <div class="w3panel w3red" v-show='hasError'>
+        <h3>Error</h3>
+        <p>Password invalid</p>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            password: '',
+            hasError: 0,
+        },
+        methods: {
+            doLogin: function () {
+                var self = this;
+                self.hasError = 0;
+                axios.post('/post.login', {
+                    command: self.password
+                }).then(function (response) {
+                    if (response.data) {
+                        window.location = '.';
+                    } else {
+                        self.hasError = 1;
+                        self.$refs.pwd.focus();
+                        self.$refs.pwd.select();
+                    }
+                }).catch(function (error) {
+                    alert(error);
+                    window.location = '.';
+                });
+            },
+        }
+    })
+</script>
+
+<?php     
+    include("./views/footer.html");
+?>

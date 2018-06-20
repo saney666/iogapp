@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="/css">
+    
+    <script src="/js"></script>
+    <title>ArchCyber I/O Gateway</title>
+</head>
+
+<body>
+    <div class="w3bar w3black w3top" id='head_bar'>
+        <a href="." class="w3bar-item w3button" :class="{ w3green: isActive[0] }">Home</a>
+        <a href="/transaction" class="w3bar-item w3button" v-if="auth" :class="{ w3green: isActive[1] }">Transaction</a>
+        <a href="/log" class="w3bar-item w3button" v-if="auth" :class="{ w3green: isActive[2] }">Log</a>
+        <a href="/setting" class="w3bar-item w3button" v-if="auth" :class="{ w3green: isActive[3] }">Setting</a>
+        <a href="/debug" class="w3bar-item w3button" v-if="auth >= 2" :class="{ w3green: isActive[4] }" v-if='bugger'>Debug</a>
+
+
+        <div class="w3bar-item w3right" v-on:click="gettime">
+            {{ message }}
+        </div>
+        <div class="w3bar-item w3right w3red" v-show='status_red'>
+            Down
+        </div>
+        <div class="w3bar-item w3right w3green" v-show='status_green'>
+            Run
+        </div>
+        <div class="w3bar-item w3right w3yellow" v-show='status_yellow'>
+            Checking
+        </div>
+        <div class="w3bar-item w3right w3button " v-if="auth" v-on:click='logout'>Log out</div>
+        <div class="w3bar-item w3right w3button " v-if="!auth" v-on:click='login'>Log in</div>
+    </div>
+    <br><br>
+    <div id='errorBox' v-show='isShow' class='w3red w3panel w3display-container'>
+        <h3>Error!!!</h3>
+        <span class=''>
+            {{ error }}
+        </span>        
+        <span class='w3button w3display-topright' @click='click'>
+            X
+        </span>
+    </div>
+    <script>
+        var headApp = new Vue({
+            el: '#head_bar',
+            data: {
+                message: '1999-12-31 23:59:59',
+                auth: parseInt('<?php echo  $authorization; ?>'),
+                status_red: 0,
+                status_green: 0,
+                status_yellow: 1,
+                isActive: [],
+                bugger: parseInt('<?php  if($authorization >= 2)echo  $authorization;else echo 0; ?>'),
+            },
+            methods: {
+                gettime: function () {
+                    var self = this;
+                    axios.get("/get/mytime" + '?hash_id=' + Math.random(), {})
+                        .then(function (response) {
+                            self.message = response.data;
+                        });
+                },
+                logout: function () {
+                    axios.post('/post.logout', {
+                    }).then(function (response) {
+                        location = '.';
+                    }).catch(function (error) {
+                        alert(error);
+                        location = '.';
+                    });
+                },
+                login: function () {
+                    location = '/login';
+                },
+                getAppState: function () {
+                    var self = this;
+                    axios.get("/hello" + '?hash_id=' + Math.random(), {})
+                        .then(function (response) {   
+                            if(response.data)                         
+                                self.setStatusGreen();      
+                            else
+                                self.setStatusRed();                          
+                        });
+                },
+                setStatusRed: function () {
+                    this.status_green = 0;
+                    this.status_red = 1;
+                    this.status_yellow = 0;
+                },
+                setStatusGreen: function () {
+                    this.status_green = 1;
+                    this.status_red = 0;
+                    this.status_yellow = 0;
+                },
+                setStatusYellow: function () {
+                    this.status_green = 0;
+                    this.status_red = 0;
+                    this.status_yellow = 1;
+                },
+            },
+            mounted: function () {
+                this.gettime();
+                setInterval(function () {
+                    this.gettime();
+                    this.getAppState();
+                }.bind(this), 3000);
+
+                var page = parseInt('<?php echo $page; ?>');
+                this.isActive[page] = 1;
+            }
+        })
+        var errApp = new Vue({
+            el: '#errorBox',
+            data: {
+                error: '<?php echo $error; ?>',
+                isShow:0       
+            },
+            methods: {
+                click: function() {
+                    this.isShow = 0;
+                }
+            },
+            mounted: function () {
+                if(this.error.length){
+                    this.isShow = 1;
+                }
+            }
+        })
+    </script>
+
+    
+    <div class='w3padding'>

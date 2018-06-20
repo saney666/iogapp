@@ -1,0 +1,16 @@
+1. download source code that includes a "configure" script and TEA makefiles for the TCL Interface.
+https://www.sqlite.org/download.html
+2. Unzip
+3. configure sqlite
+export CFLAGS='-DSQLITE_ENABLE_UPDATE_DELETE_LIMIT=1'
+uc8112
+./configure --host=arm-linux-gnueabihf --prefix=$HOME/sqlite/uc8112
+da662
+./configure --host=arm-none-linux-gnueabi --prefix=$HOME/sqlite/da662
+ioPAC
+./configure --host=arm-linux --prefix=$HOME/sqlite/iopac
+host is target name
+prefix is install directory
+4. make
+5. make install
+6. add install directory to environment variable $PATH

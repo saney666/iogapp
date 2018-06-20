@@ -1,0 +1,82 @@
+<div class="w3modal" :class='{w3show : activeCom}'>
+    <div class="w3modal-content">
+        <div class="w3container">
+            <span @click="closeComModal" class="w3button w3display-topright w3black">&times;</span>
+            <h2 class='w3center'>Edit COM</h2>
+            <div class="w3bar w3light-grey">
+                <div v-for='item in coms' class="w3button w3bar-item w3border" :class='{w3grey: item == editComData }' @click='editCom(item)'>{{ 'COM' + item.com }}</div>
+            </div>
+            <table class="w3table  w3border w3grey">
+                <tr>
+                    <th colspan="2" class="w3center">COM {{ editComData.com }}</th>
+                </tr>
+                <tr>
+                    <th>Mode</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.mode' :disabled='saveComData == 1'>
+                            <option value="0">232</option>
+                            <option value="1">485</option>
+                            <option value="2">422</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Baud</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.baud' :disabled='saveComData == 1' @change=''>
+                            <option value="9600">9600</option>
+                            <option value="19200">19200</option>
+                            <option value="38400">38400</option>
+                            <option value="57600">57600</option>
+                            <option value="115200">115200</option>                            
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Databits</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.databits' :disabled='saveComData == 1'>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Parity</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.parity' :disabled='saveComData == 1'>
+                            <option value="0">None</option>
+                            <option value="1">Odd</option>
+                            <option value="2">Even</option>
+                            <option value="3">Space</option>
+                            <option value="4">Mark</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Stopbits</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.stopbits' :disabled='saveComData == 1'>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Flow</th>
+                    <td>
+                        <select class='w3select w3border' v-model='editComData.flow' :disabled='saveComData == 1'>
+                            <option value="0">None</option>
+                            <option value="1">HW</option>
+                            <option value="2">SW</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+
+            <input type="button" value="Save" class='w3block w3button w3black' @click='saveCom' :disabled='saveComData == 1 || editComData.length != null'>
+        </div>
+    </div>
+</div>

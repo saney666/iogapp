@@ -1,0 +1,109 @@
+<div v-show='data[0].format == 1'>
+    <div v-for='(item, i) in format_custom_data' :key='item.rowid' class="w3panel w3border">
+        <div class="w3bar">
+            <div class="w3bar-item w3button" style="width: 95%" @click='item.hide = !item.hide'>
+                {{ i + 1}}
+                <span class="w3right" v-show='item.hide'>+</span>
+                <span class="w3right" v-show='!item.hide'>-</span>
+            </div>
+            <div class='w3button w3bar-item w3right' style="width: 5%" @click='deleteCustomData(i)'>&times;</div>
+        </div>
+
+        <table class="w3table w3green" v-show='!item.hide'>
+            <tr>
+                <th colspan="3" class="w3center">Send Setting</th>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>
+                    <select class="w3select" v-model='item.CommandType'>
+                        <option value="0">String</option>
+                        <option value="1">Decimal</option>
+                        <option value="2">Hex</option>
+                    </select>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Command</th>
+                <td>
+                    <input type="text" v-model='item.command' class="w3input">
+                </td>
+            </tr>
+            <tr>
+                <th colspan="3" class="w3center">Receive Setting</th>
+            </tr>
+            <tr>
+                <th>Head</th>
+                <td>
+                    <input type="text" v-model='item.head' class="w3input">
+                </td>
+            </tr>
+            <tr>
+                <th>Tail</th>
+                <td>
+                    <input type="text" v-model='item.tail' class="w3input">
+                </td>
+            </tr>
+            <tr>
+                <th>Length</th>
+                <td>
+                    <input type="text" v-model='item.length' class="w3input">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>Split Code</th>
+                <td>
+                    <select class="w3select" v-model='item.SplitCode'>
+                        <option value=" ">Space</option>
+                        <option value=",">,</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="3" class="w3center">Data Setting</th>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table class="w3table">
+                        <tr>
+                            <th></th>
+                            <th>Mode</th>
+                            <th>Position</th>
+                            <th>WriteTo</th>
+                            <th>Parameter</th>
+                        </tr>
+                        <tr v-for='(recv, i) in item.recv'>
+                            <td>
+                                <div class='w3button w3black' @click='removeCustomRecv(item, i)'>&times;</div>
+                            </td>
+                            <td>
+                                <select class="w3select" v-model='recv.changeway'>
+                                    <option value="0">Byte</option>
+                                    <option value="1">Word</option>
+                                    <option value="2">ASCII</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" v-model='recv.position' class="w3input">
+                            </td>
+                            <td>
+                                <input type="text" v-model='recv.writeaddress' class="w3input">
+                            </td>
+                            <td>
+                                <input type="text" v-model='recv.parameter' class="w3input" :disabled='recv.changeway == 1'>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="w3button w3block w3black" @click='addCustomReceiveData(item)'>Add</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="w3button w3block w3light-grey" @click='addCustomCommand'>Add Command</div>
+</div>

@@ -1,0 +1,17 @@
+1. nfs
+server:nfs-kernel-server
+add share directory:edit /etc/exports
+add==> /home/jiasiang/nfs *(rw,sync,no_root_squash)
+update ==> exportfs -r
+restart==>/etc/init.d/nfs-kernel-server restart
+client
+nfs-common
+
+2. samba
+apt install samba
+smbpasswd -a username
+modify /etc/samba/smb.conf
+
+3. gdbserver
+4. ssh server
+openssh-server

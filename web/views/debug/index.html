@@ -1,0 +1,142 @@
+<?php 
+    include("./views/header.html")
+?>
+
+<h1>Debug</h1>
+
+<div id='app2' >
+    <input type="button" value="resetLan" v-on:click='resetLan' :disabled="exe == 1">
+    <input type="button" value="endProgram" v-on:click='endProgram' :disabled="exe == 1">
+    <input type="button" value="reboot" v-on:click='reboot' :disabled="exe == 1">
+    <input type="button" value="updateTransaction" v-on:click='updateTransaction' :disabled="exe == 1">
+    <div>
+        {{ result }}
+    </div>
+</div>
+<hr>
+<div id='app'>
+    <select v-model='table' :disabled="exe == 1">
+        <option  v-for="item in items" :value="item.name">{{ item.name }}</option>
+    </select>
+
+    <input type="button" value = "refresh" v-on:click='refresh' :disabled="exe == 1"/>
+    <input type="button" value = "select table" v-on:click='selectByTable' :disabled="exe == 1"/>
+    <br>
+    Command:
+    <input type="text" v-model='message' class='w3input' />
+    <input type='button' v-on:click='execute' value='Execute' :disabled="exe == 1" />
+    <input type='button' v-on:click='select' value='Select' :disabled="exe == 1" />
+    <div>
+        {{ result }}
+    </div>
+</div>
+
+
+
+<script>
+    var app2 = new Vue({
+        el: '#app2',
+        data: {
+            exe: 0,
+            result: "",           
+        },
+        methods: {
+            execute: function (command) {
+                var self = this;
+                self.exe = 1;
+                axios.post('/db.execute', {
+                    command: command
+                })
+                    .then(function (response) {
+                        self.result = response.data;
+                        self.exe = 0;
+                    })
+                    .catch(function (error) {
+                        self.result = "err";
+                        self.exe = 0;
+                    });
+            },
+            resetLan: function () {
+                this.execute("update operation set resetLan=1");
+            },
+            reboot: function () {
+                this.execute("update operation set reboot=1");
+            },
+            endProgram: function () {
+                this.execute("update operation set endProgram=1");
+            },
+            updateTransaction: function () {
+                this.execute("update operation set updateTran=1");
+            },
+
+        }
+    })
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'select rowid, * from tranInfo',
+            result: '',
+            exe: 0,
+            items: [],
+            table:''
+        },
+        methods: {
+            selectByTable : function(){
+                var self = this;
+                self.exe = 1;
+                self.message = "select rowid, * from " + self.table;
+                self.select();
+            },
+            refresh: function(){
+                var self = this;
+                self.exe = 1;
+                axios.post('/db.select', {
+                    command: "select * from sqlite_master"
+                })
+                    .then(function (response) {
+                        self.result = response.data;
+                        self.items = response.data;
+                        self.exe = 0;
+                    })
+                    .catch(function (error) {                        
+                        self.exe = 0;
+                    });
+            },
+            execute: function () {
+                var self = this;
+                self.exe = 1;
+                axios.post('/db.execute', {
+                    command: self.message
+                })
+                    .then(function (response) {
+                        self.result = response.data;
+                        self.exe = 0;
+                    })
+                    .catch(function (error) {
+                        self.result = error;
+                        self.exe = 0;
+                    });
+            },
+            select: function () {
+                var self = this;
+                self.exe = 1;
+                axios.post('/db.select', {
+                    command: self.message
+                })
+                    .then(function (response) {
+                        self.result = response.data;
+                        self.exe = 0;
+                    })
+                    .catch(function (error) {
+                        self.result = error;
+                        self.exe = 0;
+                    });
+            }
+        }
+    })
+</script>
+
+
+<?php 
+    include("./views/footer.html")
+?>

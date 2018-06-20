@@ -1,0 +1,188 @@
+<?php 
+    include("./views/header.html")
+?>
+
+<div id='app'>
+    <div class="w3bar w3black">
+        <div class="w3bar-item w3button" style='width:50%' v-show='!active' @click='activeOperation'>Operation</div>
+        <div class="w3bar-item w3button" style='width:50%' v-show='active' @click='back'>Back</div>
+        <div class="w3bar-item w3button w3right" style='width:50%' v-show='active' @click='apply'>Apply</div>
+        <a class="w3bar-item w3button" style='width:50%' v-show='!active' href='/transaction/addNew'>Add</a>
+    </div>
+    <hr>
+    <table class="w3table-all w3hoverable">
+        <thead>
+            <tr class="w3light-grey">
+                <th>#</th>
+                <th>Interface</th>
+                <th>Interface Info</th>
+                <th>Mode</th>
+                <th>Format</th>
+                <th>Timeout</th>
+                <th>Retry</th>
+                <th>Delay</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tr v-for='(item, i) in tran'>
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.interface }}</td>
+            <td>{{ item.iinfo }}</td>
+            <td>{{ item.mode }}</td>
+            <td>{{ item.format }}</td>
+            <td>{{ item.timeout }}</td>
+            <td>{{ item.retry }}</td>
+            <td>{{ item.delay }}</td>
+            <td>
+                <div class='w3button w3black' style='width:100%' @click='editT(item.rowid)' v-show='!active'>Edit</div>
+                <select class='w3select w3light-grey' v-show='active' v-model='item.sw'>
+                    <option value="0">Choose a operation</option>
+                    <option value="1">Reset</option>
+                    <option value="2">Delete</option>
+                    <option value="3">Log</option>
+                </select>
+            </td>
+            <td>
+                <div class='w3button w3black' style='width:100%' @click='logT(item.rowid)' v-show='!active'>Log</div>
+                <div style='width:100%' class="w3container" v-show='item.sw == 3'>
+                    <p>
+                        <input type="radio" class='w3radio' :name="'tid_' + item.rowid" v-model='item.activeLog' value='1'>
+                        <label>enable</label>
+                    </p>
+                    <p>
+                        <input type="radio" class='w3radio' :name="'tid_' + item.rowid" v-model='item.activeLog' value='0'>
+                        <label>disable</label>
+                    </p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="w3modal" :class='{w3show : doApply}'>
+        <div class="w3modal-content">
+            <div class="w3panel w3center">
+                <table>
+                    <tr>
+                        <td>
+                            <img src="/img.loading">
+                        </td>
+                        <td style='width:100%'>
+                            <div class="w3light-grey">
+                                <div class="w3green" style="height:24px;" :style='{ width: applyProgress}'></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">
+                            {{ applyMessage }}
+                        </th>
+                    </tr>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            tran: JSON.parse('<?php echo $tran; ?>'),
+            active: 0,
+            doApply: 0,
+            applyMessage: '',
+            applyProgress: '0%'
+        },
+        methods: {
+            activeOperation: function () {
+                this.active = 1;
+            },
+            back: function () {
+                for (var i in this.tran)
+                    this.tran[i].sw = 0;
+                this.active = 0;
+            },
+            apply: function () {
+                if (confirm('Continue to apply?')) {
+                    this.doApply = 1;
+                    this.setFlag(0);
+                }
+            },
+            setFlag: function (index) {
+                var self = this;
+                var element = self.tran[index];
+                console.log(index);
+                self.setProgress(index, 'Saving...');
+                axios.post('/transaction/setflag', {
+                    tid: element.rowid,
+                    sw: element.sw,
+                    log: element.activeLog
+                })
+                    .then(function (response) {
+                        if (index + 1 >= self.tran.length) {
+                            self.setProgress(0, 'Applying...');
+                            axios.post('/transaction/activeUpdate', {})
+                                .then(function (response) { })
+                                .catch(function (error) {
+                                    alert(error);
+                                });
+                            self.refreshTranData();
+                        } else
+                            self.setFlag(index + 1);
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                        self.setFlag(index);
+                    });
+            },
+            refreshTranData: function () {
+                var self = this;
+                axios.get('/transaction.sw', {
+                })
+                    .then(function (response) {
+                        var swState = 0;
+                        if (response.data) {
+                            for (var i = 0; i < response.data.length; i++) {
+                                if (parseInt(response.data[i].sw) == 0)
+                                    swState++;
+                            }
+                            swState += self.tran.length - response.data.length;
+                        }
+                        self.setProgress(swState, 'Applying...');
+                        if (swState == self.tran.length) {
+                            self.applyMessage = 'Done.';
+                            setTimeout(function () {
+                                window.location = '/transaction';
+                            }, 1000);
+                        } else
+                            self.refreshTranData();
+                    })
+                    .catch(function (error) {
+                        alert(error);
+                    });
+            },
+            setProgress: function (val, text) {
+                var max = this.tran.length;
+                this.applyMessage = val + "/" + max + " " + text;
+                this.applyProgress = val * 100 / max + "%";
+            },
+            editT: function (rowid) {
+                window.location = "/transaction/edit?id=" + rowid;
+            },
+            logT: function (rowid) {
+                window.location = "/transaction/log?id=" + rowid;
+            },
+        },
+        mounted: function () {
+            this.back();
+        }
+    })
+</script>
+
+
+<?php 
+    include("./views/footer.html")
+?>

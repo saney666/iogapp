@@ -1,0 +1,53 @@
+1. change route but not found
+modify apache2 directory
+{
+	AllowOverride All
+}
+
+run ==> a2enmode rewrite
+
+final ==> restart apache2
+
+2. php not running
+make sure install 'libapache2-mod-php7.0'
+
+3. laravel form not found
+ a. composer require "laravelcollective/html":"^5.5"
+ b. modify config/app.php  //optional
+    'providers' => [
+     .
+     .
+     collective\Html\HtmlServiceProvider::class,
+     .
+     .
+     ]
+ and
+     'aliases' => [
+     .
+     .
+     'Form' => collective\Html\FormFacade::class,
+     'Html' => collective\Html\HtmlFacade::class,
+     .
+     .
+     ]    
+
+4. a2enmode not found
+apt-get install apache2.2-common
+
+5. browser -> promise not found
+npm install es6-promise
+require('es6-promise').polyfill();
+
+6. Unable open database
+make sure db file and directory have permission
+
+7. post route occur 'page has expired ....'
+a. if it is form
+	{{ csrf_field() }}
+b. if it is form
+	<input type='hidden' name='_token' value='{{ csrf_token() }}' />
+c. add except list
+on app/Http/Middleware/VerifyCsrfToken.php
+protected $exept = [
+'route',
+];	

@@ -1,0 +1,154 @@
+<?php 
+    include("./views/header.html")
+?>
+<div id='app'>
+    <table class="w3table-all w3hoverable">
+        <thead>
+            <tr class="w3light-grey">
+                <th>Name</th>
+                <th>Type</th>
+                <th>Address</th>
+                <th>Network</th>
+                <th>Netmask</th>
+                <th>Broadcast</th>
+                <th>MAC</th>
+                <th>
+                </th>
+            </tr>
+        </thead>
+        <tr v-for='(item, i) in lan'>
+            <td>{{ item.name }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.address }}</td>
+            <td>{{ item.network }}</td>
+            <td>{{ item.netmask }}</td>
+            <td>{{ item.broadcast }}</td>
+            <td>{{ item.mac }}</td>
+            <td>
+                <div class='w3button w3black' @click='oepnEdit(i)'>Edit</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="w3modal" :class='{w3show : active}'>
+        <div class="w3modal-content">
+            <div class="w3container">
+                <span @click="active = 0" class="w3button w3display-topright w3black">&times;</span>
+                <h2 class='w3center'>Edit {{ editName }}</h2>
+                <p>Type</p>
+                <input type="text" class='w3input' v-model='editType' disabled>
+                <p>Address</p>
+                <input type="text" class='w3input' v-model='editAddress' ref='addr' :disabled='disabled?true:false'>
+                <p>Network</p>
+                <input type="text" class='w3input' v-model='editNetwork' :disabled='disabled?true:false'>
+                <p>Netmask</p>
+                <input type="text" class='w3input' v-model='editNetmask' :disabled='disabled?true:false'>
+                <p>Broadcast</p>
+                <input type="text" class='w3input' v-model='editBroadcast' :disabled='disabled?true:false'>
+                <p class="w3red w3center" v-show='disabled'>{{ message }}</p>
+                <input type="button" value="Save" class='w3block w3button w3black' @click='editLan' :disabled='disabled?true:false'>
+
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            lan: JSON.parse('<?php echo $lan ?>'),
+            active: 0,
+            editIndex: 0,
+            editName: '',
+            editType: '',
+            editAddress: '',
+            editNetwork: '',
+            editNetmask: '',
+            editBroadcast: '',
+            disabled: 0,
+            message: 'Saving...',
+            checkflagCount: 0
+        },
+        methods: {
+            oepnEdit: function (index) {
+                this.editIndex = index;
+                iface = this.lan[index];
+                this.editName = iface.name;
+                this.editType = iface.type;
+                this.editAddress = iface.address;
+                this.editNetwork = iface.network;
+                this.editNetmask = iface.netmask;
+                this.editBroadcast = iface.broadcast;
+                this.active = 1;
+                this.disabled = 0;
+                setTimeout(function () {
+                    this.$refs.addr.focus();
+                    this.$refs.addr.select();
+                }.bind(this), 200);
+            },
+            editLan: function () {
+                var self = this;
+                if (confirm('Save and apply ' + self.editName + ' ?')) {
+                    self.disabled = 1;
+                    axios.post('/setting.editLan', {
+                        name: self.editName,
+                        type: self.editType,
+                        address: self.editAddress,
+                        network: self.editNetwork,
+                        netmask: self.editNetmask,
+                        broadcast: self.editBroadcast
+                    }).then(function (response) {
+                        if (response.data) {
+                            self.message = 'Waiting for apply...';
+                            self.checkflagCount = 0;
+                            self.checkFlag();
+                        } else {
+
+                        }
+                    }).catch(function (error) {
+                        alert(error);
+                        self.disabled = 0;
+                    });
+                }
+            },
+            checkFlag: function () {
+                var self = this;
+                self.checkflagCount++;
+                axios.get('/setting.getFlag', {
+                    params: {
+                        name: self.editName
+                    }
+                }).then(function (response) {
+                    if (response.data) {
+                        self.active = 0;
+                        self.disabled = 0;
+                        iface = self.lan[self.editIndex];
+                        iface.name = self.editName;
+                        iface.type = self.editType;
+                        iface.address = self.editAddress;
+                        iface.network = self.editNetwork;
+                        iface.netmask = self.editNetmask;
+                        iface.broadcast = self.editBroadcast;
+                    } else {
+                        if (self.checkflagCount > 60) {
+                            self.message = 'Something is wrong, please retry.';
+                        } else
+                            setTimeout(self.checkFlag, 1000);
+                    }
+                }).catch(function (error) {
+                    alert(error);
+                    self.checkFlag();
+                });
+            }
+        },
+        mounted: function () {
+        }
+    })
+</script>
+
+<?php 
+    include("./views/footer.html")
+?>

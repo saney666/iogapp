@@ -1,0 +1,20 @@
+<div class="w3border">
+    <div class="w3button w3large w3grey" style='width:100%' @click='activeFormat=!activeFormat'>Format
+        <span class='w3right' v-show='!activeFormat'>&#43;</span>
+        <span class='w3right' v-show='activeFormat'>&#45;</span>
+    </div>
+    <div v-show='activeFormat'>
+        <select class='w3select' v-model='data[0].format'>
+            <option value="0">Choose a format</option>
+            <option v-for='item in formatData' :value="item.fid" v-if='item.hide'>{{ item.fName }}</option>
+        </select>
+
+        <?php 
+        include("./views/transaction/edit/format/custom.html");
+        include("./views/transaction/edit/format/modbusRTU.html");
+        include("./views/transaction/edit/format/modbusTCP.html");
+    ?>
+
+
+    </div>
+</div>

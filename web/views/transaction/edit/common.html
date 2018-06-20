@@ -1,0 +1,43 @@
+<div class="w3border">
+    <div class="w3button w3large w3grey" style='width:100%' @click='activeCommon=!activeCommon'>
+        Common
+        <span class='w3right' v-show='!activeCommon'>&#43;</span>
+        <span class='w3right' v-show='activeCommon'>&#45;</span>
+    </div>
+    <div v-show='activeCommon'>
+        <table class="w3table">
+            <tr>
+                <th>Timeout(s)</th>
+                <th>Delay(ms)</th>
+                <th>Retry</th>
+                <th>Direction</th>
+                <th>Log</th>
+                <th>Abnormal</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type="text" class="w3input w3border" v-model='data[0].timeout'>
+                </td>
+                <td>
+                    <input type="text" class="w3input w3border" v-model='data[0].delay'>
+                </td>
+                <td>
+                    <input type="text" class="w3input w3border" v-model='data[0].retry'>
+                </td>
+                <td>
+                    <select class='w3select' v-model='data[0].direction' @change='verifyFormatList(data[0].direction)'>
+                        <option value="0">Server</option>
+                        <option value="1">Client</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="checkbox" class="w3check" v-model='data[0].activeLog'>
+                    <label for="">Enable</label>
+                </td>
+                <td>
+                    <input type="text" class="w3input w3border" v-model='data[0].abnormalPoint'>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

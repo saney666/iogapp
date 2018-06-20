@@ -1,0 +1,43 @@
+<div class="w3border">
+    <div class="w3button w3large w3grey" style='width:100%' @click='activeInterface=!activeInterface'>Interface
+        <span class='w3right' v-show='!activeInterface'>&#43;</span>
+        <span class='w3right' v-show='activeInterface'>&#45;</span>
+    </div>
+    <div class="w3padding" v-show='activeInterface'>
+        <table class="w3table">
+            <tr>
+                <th>Type:</th>
+                <th>
+                    <input type="radio" class='w3radio' name="type" v-model='data[0].interface' value='0'>
+                    <label>LAN</label>
+                </th>
+                <th>
+                    <input type="radio" class='w3radio' name="type" v-model='data[0].interface' value='1'>
+                    <label>SerialCOM</label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan='3' class='w3center'>
+                    <select v-show='data[0].interface==0' ref='interfaceLan' v-model='data[0].iid' class="w3select w3border" @change='selectLanChange'>
+                        <option value="-1">...</option>
+                        <option value="0">Edit</option>
+                        <option v-for='item in lans' :value='item.rowid'>{{ item.ip + ':' + item.port }}</option>
+                    </select>
+                    <select v-show='data[0].interface==1'ref='interfaceCom' v-model='data[0].iid' class="w3select w3border" @change='selectComChange'>
+                        <option value="-1">...</option>
+                        <option value="0">Edit</option>
+                        <option v-for='item in coms' :value='item.rowid'>{{ 'COM' + item.com }}</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br>
+    </div>
+</div>
+
+<?php 
+    include("./views/transaction/edit/comModal.html")
+?>
+<?php 
+    include("./views/transaction/edit/lanModal.html")
+?>

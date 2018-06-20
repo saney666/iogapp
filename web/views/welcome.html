@@ -1,0 +1,69 @@
+<?php 
+    include("./views/header.html")
+?>
+<div id='app'>
+    <h2 class='w3center'>LAN</h2>
+    <table class="w3table-all w3hoverable">
+        <thead>
+            <tr class="w3light-grey">
+                <th>Name</th>
+                <th>Type</th>
+                <th>Address</th>
+                <th>Network</th>
+                <th>Netmask</th>
+                <th>Broadcast</th>
+            </tr>
+        </thead>
+        <tr v-for='item in lan'>
+            <td>{{ item.name }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.address }}</td>
+            <td>{{ item.network }}</td>
+            <td>{{ item.netmask }}</td>
+            <td>{{ item.broadcast }}</td>
+        </tr>
+    </table>
+    <hr>
+    <h2 class='w3center'>Transaction</h2>
+    <table class="w3table-all w3hoverable">
+        <thead>
+            <tr class="w3light-grey">
+                <th>#</th>
+                <th>Interface</th>
+                <th>Mode</th>
+                <th>Format</th>
+                <th>Timeout</th>
+                <th>Retry</th>
+                <th>Delay</th>
+            </tr>
+        </thead>
+        <tr v-for='(item, i) in tran'>
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.interface }}</td>
+            <td>{{ item.mode }}</td>
+            <td>{{ item.format }}</td>
+            <td>{{ item.timeout }}</td>
+            <td>{{ item.retry }}</td>
+            <td>{{ item.delay }}</td>
+        </tr>
+    </table>
+</div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            lan: JSON.parse('<?php echo $lan ?>'),
+            tran: JSON.parse('<?php echo $tran ?>'),
+            count: 1,
+        },
+        methods: {
+        },
+        mounted: function () {
+        }
+    })
+</script>
+
+
+<?php 
+    include("./views/footer.html")
+?>

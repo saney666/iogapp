@@ -1,0 +1,45 @@
+<div v-show='data[0].format == 3'>
+    <table class="w3table w3green">
+        <tr>
+            <th>#</th>
+            <th>Transaction ID</th>
+            <th>Protocol ID</th>
+            <th>Unit ID</th>
+            <th>Function</th>
+            <th>Read Address</th>
+            <th>Number</th>
+            <th>Write Address</th>
+        </tr>
+        <tr v-for='(item, i) in format_modbustcp_data'>
+            <td>
+                <input type="button" class='w3button w3black' @click='removemodbustcpsetting(i)' value='&times;' :disabled='data[0].direction == 0'> {{ i + 1 }}</td>
+            <td>
+                <input class='w3input' type="text" v-model='item.transactionId' :disabled='data[0].direction == 0'>
+            </td>
+            <td>
+                <input class='w3input' type="text" v-model='item.protocolId' :disabled='data[0].direction == 0'>
+            </td>
+            <td>
+                <input class='w3input' type="text" v-model='item.unitId' :disabled='data[0].direction == 0'>
+            </td>
+            <td>
+                <select class="w3select" v-model='item.function' :disabled='data[0].direction == 0'>
+                    <option value="1">Read Coil Status (0XXXXX)</option>
+                    <option value="2">Read Input Status(1XXXXX)</option>
+                    <option value="3">Read Holding Registers(4XXXXX)</option>
+                    <option value="4">Read Input Registers(3XXXXX)</option>
+                </select>
+            </td>
+            <td>
+                <input class='w3input' type="text" v-model='item.readAddr' :disabled='data[0].direction == 0'>
+            </td>
+            <td>
+                <input class='w3input' type="text" v-model='item.number' :disabled='data[0].direction == 0'>
+            </td>
+            <td>
+                <input class='w3input' type="text" v-model='item.writeAddr' :disabled='data[0].direction == 0'>
+            </td>
+        </tr>
+    </table>
+    <input type="button" class='w3button w3block w3black' @click='addmodbustcpsetting' value='Add' :disabled='data[0].direction == 0'>
+</div>

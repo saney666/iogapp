@@ -1,0 +1,5 @@
+1. uc8112 install nfs client&gdbserver
+apt install nfs-common gdbserver
+
+2. uc8112 mount to ubuntu
+mount -t nfs ubuntuIP:PATH 8112_directory
